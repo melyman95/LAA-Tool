@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 //using System.Linq;
@@ -137,7 +138,17 @@ namespace Large_Address_Aware__DotNETFramework_
                         SystemSounds.Asterisk.Play();
                         String directoryPath = Path.GetDirectoryName(filePath);
                         String folder = Path.GetFileName(directoryPath);
-                        MessageBox.Show(Path.GetFileName(filePathBox.Text) + " (" + folder + ")" + " should now be LAA! :) smileyface", "Congraturlations", MessageBoxButtons.OK);
+                        FileVersionInfo info = FileVersionInfo.GetVersionInfo(filePath);
+                        String description = null;
+                        if (!String.IsNullOrEmpty(info.FileDescription))
+                        {
+                            description = info.FileDescription;
+                        }
+                        else if (!String.IsNullOrEmpty(info.FileName))
+                        {
+                            description = info.FileName;
+                        }
+                            MessageBox.Show(Path.GetFileName(filePathBox.Text) + " (" + description + ")" + " should now be LAA! :) smileyface", "Congraturlations", MessageBoxButtons.OK);
                     }
                     else
                     {
