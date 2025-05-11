@@ -42,7 +42,7 @@
             this.filePathBox.Location = new System.Drawing.Point(10, 377);
             this.filePathBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.filePathBox.Name = "filePathBox";
-            this.filePathBox.Size = new System.Drawing.Size(681, 32);
+            this.filePathBox.Size = new System.Drawing.Size(681, 41);
             this.filePathBox.TabIndex = 0;
             this.filePathBox.TextChanged += new System.EventHandler(this.filePathBox_TextChanged);
             this.filePathBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.filePathBox_DragDrop);
@@ -74,7 +74,7 @@
             this.backupCheckbox.AutoSize = true;
             this.backupCheckbox.Location = new System.Drawing.Point(496, 492);
             this.backupCheckbox.Name = "backupCheckbox";
-            this.backupCheckbox.Size = new System.Drawing.Size(174, 28);
+            this.backupCheckbox.Size = new System.Drawing.Size(234, 38);
             this.backupCheckbox.TabIndex = 4;
             this.backupCheckbox.Text = "Create Backup?";
             this.backupCheckbox.UseVisualStyleBackColor = true;
@@ -100,7 +100,7 @@
             this.Controls.Add(this.openButton);
             this.Controls.Add(this.patchButton);
             this.Controls.Add(this.filePathBox);
-            this.Font = new System.Drawing.Font("Tahoma", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Tahoma", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "MainForm";

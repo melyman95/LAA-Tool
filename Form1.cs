@@ -148,12 +148,62 @@ namespace Large_Address_Aware__DotNETFramework_
                         {
                             description = info.FileName;
                         }
-                            MessageBox.Show(Path.GetFileName(filePathBox.Text) + " (" + description + ")" + " should now be LAA! :) smileyface", "Congraturlations", MessageBoxButtons.OK);
+                        //CustomMessageBox box = new CustomMessageBox("poop", "poop", 640, 480);
+                        //box.ShowDialog();
+
+                        Random random = new Random();
+                        int sound = random.Next(1, 7);
+                        if (sound == 1)
+                        {
+                            SystemSounds.Asterisk.Play();
+                        }
+                        else if (sound == 2)
+                        {
+                            SystemSounds.Question.Play();
+                        }
+                        else if (sound == 3)
+                        {
+                            SystemSounds.Beep.Play();
+                        }
+                        else if (sound == 4)
+                        {
+                            SystemSounds.Exclamation.Play();
+                        }
+                        else if (sound == 5)
+                        {
+                            SystemSounds.Asterisk.Play();
+                        }
+                        MessageBox.Show(Path.GetFileName(filePathBox.Text) + " should now be LAA.", "Woo-Hoo!", MessageBoxButtons.OK);
                     }
                     else
                     {
-                        SystemSounds.Exclamation.Play();
-                        MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK);
+                        Random random = new Random();
+                        int sound = random.Next(1, 7);
+                        if (sound == 1)
+                        {
+                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            SystemSounds.Asterisk.Play();
+                        }
+                        else if (sound == 2)
+                        {
+                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            SystemSounds.Question.Play();
+                        }
+                        else if (sound == 3)
+                        {
+                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            SystemSounds.Beep.Play();
+                        }
+                        else if (sound == 4)
+                        {
+                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            SystemSounds.Exclamation.Play();
+                        }
+                        else if (sound == 5)
+                        {
+                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            SystemSounds.Asterisk.Play();
+                        }
                         return;
                     }
                 }
