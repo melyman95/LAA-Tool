@@ -34,6 +34,7 @@
             this.openButton = new System.Windows.Forms.Button();
             this.backupCheckbox = new System.Windows.Forms.CheckBox();
             this.restoreButton = new System.Windows.Forms.Button();
+            this.deleteBackupButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // filePathBox
@@ -89,12 +90,25 @@
             this.restoreButton.UseVisualStyleBackColor = true;
             this.restoreButton.Click += new System.EventHandler(this.restoreButton_Click);
             // 
+            // deleteBackupButton
+            // 
+            this.deleteBackupButton.Location = new System.Drawing.Point(496, 549);
+            this.deleteBackupButton.Name = "deleteBackupButton";
+            this.deleteBackupButton.Size = new System.Drawing.Size(234, 56);
+            this.deleteBackupButton.TabIndex = 6;
+            this.deleteBackupButton.Text = "Delete Backup";
+            this.deleteBackupButton.UseVisualStyleBackColor = true;
+            this.deleteBackupButton.Click += new System.EventHandler(this.deleteBackupButton_Click);
+            // 
             // MainForm
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoScroll = true;
+            this.AutoSize = true;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(701, 548);
+            this.ClientSize = new System.Drawing.Size(776, 617);
+            this.Controls.Add(this.deleteBackupButton);
             this.Controls.Add(this.restoreButton);
             this.Controls.Add(this.backupCheckbox);
             this.Controls.Add(this.openButton);
@@ -119,6 +133,7 @@
         private System.Windows.Forms.Button openButton;
         private System.Windows.Forms.CheckBox backupCheckbox;
         private System.Windows.Forms.Button restoreButton;
+        private System.Windows.Forms.Button deleteBackupButton;
     }
 }
 
