@@ -5,10 +5,10 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-//using System.Linq;
+using System.Linq;
 using System.Media;
 using System.Text;
-//using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -20,7 +20,8 @@ namespace Large_Address_Aware__DotNETFramework_
         const int PE_HEADER_OFFSET_LOCATION = 0x3C;
         const int CHARACTERISTICS_OFFSET = 0x16; // Offset in PE header
         const int MACHINE_TYPE_OFFSET = 0x4; // Offset in PE header where machine type is stored
-        String initialDirectory = "";
+        string initialDirectory = "";
+        string backupDirectory = "";
 
         public MainForm()
         {
@@ -58,6 +59,12 @@ namespace Large_Address_Aware__DotNETFramework_
             {
                 File.Copy(filePath, newFilePath);
             }
+            backupDirectory = newFilePath;
+        }
+
+        private void deleteBackup(String filePath)
+        {
+            File.Delete(filePath);
         }
 
         private void restoreFromBackup(String filePath)
@@ -93,11 +100,22 @@ namespace Large_Address_Aware__DotNETFramework_
             return is32;
         }
 
-        private bool IsLAA()
+        private bool IsLAA(string path, BinaryReader reader, FileStream stream)
         {
-            bool laa = false;
+            ushort characteristics = 0;
 
-            return laa;
+            if (stream.CanSeek == true)
+            {
+                // Read PE header location
+                stream.Seek(PE_HEADER_OFFSET_LOCATION, SeekOrigin.Begin);
+                int PEHeaderOffset = reader.ReadInt32();
+
+                // Seek to the characteristics field
+                stream.Seek(PEHeaderOffset + CHARACTERISTICS_OFFSET, SeekOrigin.Begin);
+                characteristics = reader.ReadUInt16();
+            }
+
+            return (characteristics & IMAGE_FILE_LARGE_ADDRESS_AWARE) != 0;
         }
 
         private void patchFile(String filePath)
@@ -109,109 +127,83 @@ namespace Large_Address_Aware__DotNETFramework_
                     createBackup(filePath);
                 }
 
-                FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
-                BinaryReader rdr = new BinaryReader(fs);
-                BinaryWriter wrtr = new BinaryWriter(fs);
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+                using (var rdr = new BinaryReader(fs))
+                using (var wrtr = new BinaryWriter(fs))
 
-                if (fs.CanSeek == true)
                 {
-                    // Read PE header location
-                    fs.Seek(PE_HEADER_OFFSET_LOCATION, SeekOrigin.Begin);
-                    int PEHeaderOffset = rdr.ReadInt32();
 
-                    // Seek to the characteristics field
-                    fs.Seek(PEHeaderOffset + CHARACTERISTICS_OFFSET, SeekOrigin.Begin);
-                    ushort characteristics = rdr.ReadUInt16();
-
-                    // Seek to the Machine Type field
-                    fs.Seek(PEHeaderOffset + MACHINE_TYPE_OFFSET, SeekOrigin.Begin);
-                    ushort machineType = rdr.ReadUInt16();
-
-                    if (Is32Bit(machineType))
+                    if (fs.CanSeek == true)
                     {
-                        // Modify the Large Address Aware flag
-                        characteristics |= IMAGE_FILE_LARGE_ADDRESS_AWARE;
+                        // Read PE header location
+                        fs.Seek(PE_HEADER_OFFSET_LOCATION, SeekOrigin.Begin);
+                        int PEHeaderOffset = rdr.ReadInt32();
 
-                        // Write the modified flag back
+                        // Seek to the characteristics field
                         fs.Seek(PEHeaderOffset + CHARACTERISTICS_OFFSET, SeekOrigin.Begin);
-                        wrtr.Write(characteristics);
-                        SystemSounds.Asterisk.Play();
-                        String directoryPath = Path.GetDirectoryName(filePath);
-                        String folder = Path.GetFileName(directoryPath);
-                        FileVersionInfo info = FileVersionInfo.GetVersionInfo(filePath);
-                        String description = null;
-                        if (!String.IsNullOrEmpty(info.FileDescription))
-                        {
-                            description = info.FileDescription;
-                        }
-                        else if (!String.IsNullOrEmpty(info.FileName))
-                        {
-                            description = info.FileName;
-                        }
-                        //CustomMessageBox box = new CustomMessageBox("poop", "poop", 640, 480);
-                        //box.ShowDialog();
+                        ushort characteristics = rdr.ReadUInt16();
 
-                        Random random = new Random();
-                        int sound = random.Next(1, 7);
-                        if (sound == 1)
+                        // Seek to the Machine Type field
+                        fs.Seek(PEHeaderOffset + MACHINE_TYPE_OFFSET, SeekOrigin.Begin);
+                        ushort machineType = rdr.ReadUInt16();
+
+                        if (Is32Bit(machineType))
                         {
+                            // Modify the Large Address Aware flag
+                            characteristics |= IMAGE_FILE_LARGE_ADDRESS_AWARE;
+
+                            // Write the modified flag back
+                            fs.Seek(PEHeaderOffset + CHARACTERISTICS_OFFSET, SeekOrigin.Begin);
+                            wrtr.Write(characteristics);
                             SystemSounds.Asterisk.Play();
+                            String directoryPath = Path.GetDirectoryName(filePath);
+                            String folder = Path.GetFileName(directoryPath);
+                            FileVersionInfo info = FileVersionInfo.GetVersionInfo(filePath);
+                            String description = null;
+                            if (!String.IsNullOrEmpty(info.FileDescription))
+                            {
+                                description = info.FileDescription;
+                            }
+                            else if (!String.IsNullOrEmpty(info.FileName))
+                            {
+                                description = info.FileName;
+                            }
+
+                            if (IsLAA(filePath, rdr, fs))
+                            {
+                                SystemSounds.Asterisk.Play();
+                                MessageBox.Show(Path.GetFileName(filePathBox.Text) + " should now be LAA.", "Woo-Hoo!", MessageBoxButtons.OK);
+                                if (!String.IsNullOrEmpty(backupDirectory))
+                                {
+                                    restoreButton.Enabled = true;
+                                    deleteBackupButton.Enabled = true;
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show("Something went wrong. Be sure to run this program as administrator. I promise this isn't a virus. JK it's a virus.");
+                            }
+                            if (restoreButton.Enabled == true)
+                            {
+                                deleteBackupButton.Enabled = true;
+                            }
+                            else
+                            {
+                                deleteBackupButton.Enabled = false;
+                            }
                         }
-                        else if (sound == 2)
-                        {
-                            SystemSounds.Question.Play();
-                        }
-                        else if (sound == 3)
+                        else
                         {
                             SystemSounds.Beep.Play();
+                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
-                        else if (sound == 4)
-                        {
-                            SystemSounds.Exclamation.Play();
-                        }
-                        else if (sound == 5)
-                        {
-                            SystemSounds.Asterisk.Play();
-                        }
-                        MessageBox.Show(Path.GetFileName(filePathBox.Text) + " should now be LAA.", "Woo-Hoo!", MessageBoxButtons.OK);
                     }
                     else
                     {
-                        Random random = new Random();
-                        int sound = random.Next(1, 7);
-                        if (sound == 1)
-                        {
-                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            SystemSounds.Asterisk.Play();
-                        }
-                        else if (sound == 2)
-                        {
-                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            SystemSounds.Question.Play();
-                        }
-                        else if (sound == 3)
-                        {
-                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            SystemSounds.Beep.Play();
-                        }
-                        else if (sound == 4)
-                        {
-                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            SystemSounds.Exclamation.Play();
-                        }
-                        else if (sound == 5)
-                        {
-                            MessageBox.Show("File is not 32 bit. Exiting...", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            SystemSounds.Asterisk.Play();
-                        }
+                        SystemSounds.Exclamation.Play();
+                        MessageBox.Show("Something went wrong. Exiting...");
                         return;
                     }
-                }
-                else
-                {
-                    SystemSounds.Exclamation.Play();
-                    MessageBox.Show("Something went wrong. Exiting...");
-                    return;
                 }
             }
             catch (System.IO.EndOfStreamException ex)
@@ -219,6 +211,7 @@ namespace Large_Address_Aware__DotNETFramework_
                 SystemSounds.Exclamation.Play();
                 MessageBox.Show(ex.ToString() + "!\n" + " this probably means you are attempting to use this tool on a 16-bit/DOS exe. Will only work on 32-bit Windows applications.", "Error", MessageBoxButtons.OK);
             }
+            //backupDirectory = null;
         }
 
         private void openButton_Click(object sender, EventArgs e)
@@ -249,21 +242,43 @@ namespace Large_Address_Aware__DotNETFramework_
             {
                 patchFile(filePathBox.Text.Trim());
             }
+            if (restoreButton.Enabled == true)
+            {
+                deleteBackupButton.Enabled = true;
+            }
+            else
+            {
+                deleteBackupButton.Enabled = false;
+            }
         }
 
         private void filePathBox_TextChanged(object sender, EventArgs e)
         {
-            String backup = searchForBackup(Path.GetDirectoryName(filePathBox.Text));
-            String extension = Path.GetExtension(backup);
-            if (extension == ".BACK")
+            string backup = searchForBackup(Path.GetDirectoryName(filePathBox.Text));
+            string extension = Path.GetExtension(backup);
+            if (String.IsNullOrEmpty(backup))
+            {
+                return;
+            }
+            string backupPath = Path.GetFullPath(backup);
+            string extension2 = Path.GetExtension(filePathBox.Text);
+
+            if (extension == ".BACK" && extension2 == ".EXE".ToLower())
             {
                 restoreButton.Enabled = true;
-                return;
             }
             else
             {
                 restoreButton.Enabled = false;
-                return;
+            }
+
+            if (restoreButton.Enabled == true)
+            {
+                deleteBackupButton.Enabled = true;
+            }
+            else
+            {
+                deleteBackupButton.Enabled = false;
             }
         }
 
@@ -277,6 +292,14 @@ namespace Large_Address_Aware__DotNETFramework_
             patchButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             openButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             filePathBox.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left;
+
+            if (String.IsNullOrEmpty(filePathBox.Text)) {
+                deleteBackupButton.Enabled = false;
+            }
+            else
+            {
+                deleteBackupButton.Enabled = true;
+            }
         }
 
         private void filePathBox_DragDrop(object sender, DragEventArgs e)
@@ -301,6 +324,46 @@ namespace Large_Address_Aware__DotNETFramework_
             catch (Exception ex)
             {
                 MessageBox.Show("uh oh.\n" + ex.ToString());
+            }
+        }
+
+        private void deleteBackupButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(backupDirectory))
+                {
+                    deleteBackup(backupDirectory);
+                    SystemSounds.Beep.Play();
+                    MessageBox.Show("BACKUP DELETED.");
+                }
+                if (!File.Exists(backupDirectory)) {
+                    restoreButton.Enabled = false;
+                }
+                else
+                {
+                    restoreButton.Enabled = true;
+                }
+                if (restoreButton.Enabled == true)
+                {
+                    deleteBackupButton.Enabled = true;
+                }
+                else
+                {
+                    deleteBackupButton.Enabled = false;
+                }
+            }
+            catch (Exception)
+            {
+                if (restoreButton.Enabled == true)
+                {
+                    deleteBackupButton.Enabled = true;
+                }
+                else
+                {
+                    deleteBackupButton.Enabled = false;
+                }
+                return;
             }
         }
     }
