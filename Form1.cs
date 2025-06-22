@@ -263,7 +263,7 @@ namespace Large_Address_Aware__DotNETFramework_
             string backupPath = Path.GetFullPath(backup);
             string extension2 = Path.GetExtension(filePathBox.Text);
 
-            if (extension == ".BACK" && extension2 == ".EXE".ToLower())
+            if (extension == ".BACK".ToLower() && extension2 == ".EXE".ToLower())
             {
                 restoreButton.Enabled = true;
             }
